@@ -12,19 +12,23 @@ module.exports = (db) => {
 
   router.post('/login', function (req, res, next) {
     const { email, password } = req.body
+    console.log(req.body);
     db.query('SELECT * FROM users WHERE email = $1', [email], (err, data) => {
       if (err) {
+        console.log(err);
         req.flash('loginInfo', 'something wrong, please call administrator')
         return res.redirect('/')
       }
 
       if (data.rows.length == 0) {
+        console.log(err);
         req.flash('loginInfo', 'email or password wrong')
         return res.redirect('/')
       }
 
       bcrypt.compare(password, data.rows[0].password, function (err, isValid) {
         if (err) {
+          console.log(err);
           req.flash('loginInfo', 'something wrong, please call administrator')
           return res.redirect('/')
         }
@@ -33,8 +37,9 @@ module.exports = (db) => {
           req.flash('loginInfo', 'email or password wrong')
           return res.redirect('/')
         }
-
+        console.log('dilogin post')
         req.session.user = data.rows[0]
+        console.log(req.session.user)
         res.redirect('/projects')
 
       });

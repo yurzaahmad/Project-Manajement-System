@@ -9,7 +9,7 @@ var flash = require('connect-flash');
 const { Pool } = require('pg')
 
 const pool = new Pool({
-  user: 'rubi',
+  user: 'yurza',
   host: 'localhost',
   database: 'pmsdb',
   password: '12345',

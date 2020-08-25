@@ -1,12 +1,13 @@
 var express = require('express');
 var router = express.Router();
 var helpers = require('../helpers/util')
-
+console.log(helpers)
 /* GET home page. */
 
 module.exports = (db) => {
     // start main project
   router.get('/', helpers.isLoggedIn, function (req, res, next) {
+    console.log('diproject')
     res.render('projects/list', {user: req.session.user})
   });
 
