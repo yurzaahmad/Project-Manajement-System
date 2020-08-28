@@ -27,14 +27,15 @@
             <div class="form-group form-check">
                 <input type="checkbox" class="form-check-input" name="checkBoolean" id="checkBoolean" />
                 <label class="form-check-label" for="exampleCheck1">Member</label>
-                <select class="custom-select custom-select-lg mb-3" name="boolean">
+                <select class="custom-select custom-select-lg mb-3" name="">
                     <option selected>Choose the member</option>
-                    <option value="true">True</option>
-                    <option value="false">False</option>
+                    <% hasil.forEach((obj) => { %>
+                    <option value="<%= obj.userid %>"><%= obj.fullname %></option>
+                    <% }) %>
                 </select>
             </div>
 
-            <button type="submit" class="btn btn-dark">SEARCH</button>
+            <button type=" submit" class="btn btn-dark">SEARCH</button>
 
         </form>
         <br><br>
@@ -77,25 +78,46 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Members</th>
-                    <th>Actions</th>
+                    <th<%= option.id ? `` : `hidden`%>> id </th>
+                        <th<%= option.name ? `` : `hidden`%>>Name</th>
+                            <th<%= option.member ? `` : `hidden`%>>Members</th>
+                                <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <% data.forEach((item, index) =>{ %>
                 <tr>
-                    <td><%= item.projectid %></td>
-                    <td><%= item.name %></td>
-                    <td>
-                        <a href="edit/<%= item.id %>" class="btn btn-danger">edit</a>
-                    </td>
+
+                    <td<%= option.id ? `` : `hidden`%>><%= item.projectid %></td>
+                        <td<%= option.name ? `` : `hidden`%>><%= item.name %></td>
+                            <td<%= option.member ? `` : `hidden`%>><%= item.member %></td>
+                                <td>
+                                    <a href="edit/<%= item.id %>" class="btn btn-danger">edit</a>
+                                </td>
                 </tr>
                 <% }) %>
             </tbody>
         </table>
-        <a href="add" class="btn btn-dark">Add</a>
+        <br>
+        <nav aria-label="Page navigation example">
+            <ul class="pagination">
+                <li class="page-item <%= page == 1 ? 'disabled' : ''%>"><a class="page-link"
+                        href="/projects<%= url.replace(`?page=${parseInt(page)}`, `?page=${parseInt(page) - 1}`)%>">Previous</a>
+                </li>
+                <%for (let i=1; i <= pages; i++ ){%>
+                <li class="page-item <%= (i == page) ? 'active' : ''%>"><a class="page-link"
+                        href="/projects<%= url.replace(`?page=${parseInt(page)}`, `?page=${i}`)%>">
+                        <%=i%>
+                    </a>
+                </li>
+                <%}%>
+                <li class="page-item <%= page==pages ? 'disabled' : ''%>"><a class="page-link disabled"
+                    href="/projects<%= url.replace(`?page=${parseInt(page)}`, `?page=${parseInt(page) - 1}`)%>">Next</a>
+                </li>
+            </ul>
+        </nav>
+        <br>
+        <a href="projects/add" class="btn btn-dark">Add</a>
     </form>
 </div>
 

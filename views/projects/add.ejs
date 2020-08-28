@@ -1,73 +1,31 @@
 <%- include('../partials/headers'); -%>
 
-
-<div class="container">
-    <h1>Add Data</h1>
-    <form action="" method="post">
-        <div class="row">
-            <div class="col-sm-2">
-
-                <label for="string" class="col-sm-2 col-form-label" value="">String</label>
-            </div>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" id="string" name="string" autocomplete="off" />
-            </div>
+<div class="container container-card">
+    <h1>Add Project</h1>
+    <form action="" method="POST" id="form-siswa">
+        <div class="form-group">
+            <label for="exampleInputEmail1">Name</label>
+            <input type="string" class="form-control" id="projectname" aria-describedby="emailHelp" name="projectname"
+                placeholder="Project name">
         </div>
-        <br>
-        <div class="row">
-            <div class="col-sm-2">
+        <fieldset class="form-group">
+            <div class="row">
+                <legend class="col-form-label col-sm-2 pt-0">Member</legend>
+                <div class="col-sm-10">
+                    <% data.forEach ((item,index) => { %>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" name="members" id="members<%= index + 1%>"
+                            value="<%= item.userid %>">
+                        <label class="form-check-label" for="members<%= index + 1 %>">
+                            <%= item.fullname %>
+                        </label>
+                    </div>
 
-                <label for="integer" class="col-sm-2 col-form-label" value="">Integer</label>
+                    <br><br>
+                    <% }) %>
+                </div>
             </div>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" id="integer" name="integer" autocomplete="off" />
-            </div>
-        </div>
-        <br>
-        <div class="row">
-            <div class="col-sm-2">
-
-                <label for="float" class="col-sm-2 col-form-label" value="">Float</label>
-            </div>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" id="float" name="float" autocomplete="off" />
-            </div>
-        </div>
-        <br>
-        <div class="row">
-            <div class="col-sm-2">
-
-                <label for="date" class="col-sm-2 col-form-label" value="">Date</label>
-            </div>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" id="date" name="date" autocomplete="off" />
-            </div>
-        </div>
-        <br>
-        <div class="row">
-            <div class="col-sm-2">
-
-                <label for="boolean" class="col-sm-2 col-form-label">Boolean</label>
-            </div>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" id="boolean" name="boolean" autocomplete="off" />
-            </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary">SAVE</button>
-        <a href="/" class="btn btn-primary">BACK</a>
+        </fieldset>
+        <button type="submit" class="btn btn-primary">Update</button>
     </form>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
-        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
-        crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
-        integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
-        crossorigin="anonymous"></script>
 </div>
-</body>
-
-</html>
-<!-- dataSiswa.splice(req.params.id, 1) -->

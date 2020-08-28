@@ -12,6 +12,7 @@ module.exports = (db) => {
     let sql = `SELECT * FROM users WHERE email = '${user.email}'`
     db.query(sql, (err, data) => {
       console.log(err);
+      console.log(sql);
       if (err) return res.status(500).json(err)
       res.render('profile/view', {
         user: req.session.user
