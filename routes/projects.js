@@ -4,6 +4,12 @@ var helpers = require('../helpers/util')
 console.log(helpers)
 /* GET home page. */
 
+let checkOption = {
+  id: true,
+  name: true,
+  member: true
+}
+
 module.exports = (db) => {
   // start main project
   router.get('/', helpers.isLoggedIn, function (req, res, next) {
@@ -27,14 +33,15 @@ module.exports = (db) => {
       getData += ` WHERE ${data.join(" AND ")}`
     }
     getData += `) AS projectname`;
-    console.log(getData);
+    // console.log(getData);
     db.query(getData, (err, totaldata) => {
 
       if (err) return res.json(err)
       //pagination
       const url = req.url == '/' ? '/?page=1' : req.url
       const page = req.query.page || 1
-      const limit = 5
+      const limit = 3
+      // console.log('ini', page);
       const offset = (page - 1) * limit
       const total = totaldata.rows[0].total
       const pages = Math.ceil(total / limit);
@@ -52,11 +59,11 @@ module.exports = (db) => {
 
 
       db.query(getData, (err, dataproject) => {
-        console.log('woi', getData);
-        console.log('data project', dataproject);
+        // console.log('woi', getData);
+        // console.log('data project', dataproject);
         if (err) return res.json(err)
         db.query(getData, (err, data) => {
-          console.log('wee');
+          // console.log('wee');
           if (err) return res.json(err)
 
           let getUser = `SELECT userid, concat(firstname,' ',lastname) as fullname from users`
@@ -70,7 +77,7 @@ module.exports = (db) => {
                 pages,
                 data: dataproject.rows,
                 hasil: datauser.rows,
-                // option: checkOption,
+                option: checkOption,
                 login: user
               })
           })
@@ -85,6 +92,13 @@ module.exports = (db) => {
 
 
   });
+
+  router.post('/option', helpers.isLoggedIn, (req, res) => {
+    checkOption.id = req.body.checkid;
+    checkOption.name = req.body.checkname;
+    checkOption.member = req.body.checkmember;
+    res.redirect('/projects')
+  })
 
   router.get('/add', helpers.isLoggedIn, function (req, res, next) {
     let sql = `SELECT DISTINCT userid, CONCAT (firstname, ' ' , lastname) AS fullname FROM users ORDER BY fullname`
@@ -154,16 +168,117 @@ module.exports = (db) => {
     }
   });
 
-  router.get('/edit/:id', helpers.isLoggedIn, function (req, res, next) {
-    res.render('projects/edit', { user: req.session.user })
+  router.get('/edit/:projectid', helpers.isLoggedIn, (req, res) => {
+    // console.log('wed');
+    let projectid = req.params.projectid
+    let links = 'projects'
+    let sql = `SELECT projects.name from projects WHERE projectid = ${projectid}`
+    db.query(sql, (err, data) => {
+      if (err) return res.status(500).json
+      let nameProject = data.rows[0]
+      let sqlMember = `SELECT DISTINCT (userid), concat(firstname, ' ', lastname) AS fullname from users`
+      db.query(sqlMember, (err, member) => {
+        // console.log('wes');
+        if (err) return res.status(500).json
+        let members = member.rows;
+        // console.log(members);
+        let sqlMember = `SELECT members.userid, projects.name, projects.projectid FROM members LEFT JOIN projects ON members.projectid = projects.projectid WHERE projects.projectid = ${projectid};`
+        db.query(sqlMember, (err, dataMembers) => {
+          // console.log('ini', dataMembers);
+          // console.log('wer');
+          if (err) return res.status(500).json({
+            error: true,
+            message: err
+          })
+          let dataMember = dataMembers.rows.map(item => item.userid)
+          // console.log('sek');
+          res.render('projects/edit', {
+            dataMember,
+            nameProject,
+            members,
+            links,
+            user: req.session.user
+          })
+        })
+      })
+    })
   });
 
-  router.post('/edit/:id', helpers.isLoggedIn, function (req, res, next) {
-    res.redirect('/projects')
+  router.post('/edit/:projectid', helpers.isLoggedIn, function (req, res, next) {
+    let projectid = req.params.projectid
+    const {
+      projectname,
+      editmembers
+    } = req.body
+    console.log(req.body);
+    let sqlProjectname = `UPDATE projects SET name = '${projectname}' WHERE projectid = ${projectid}`
+    console.log(sqlProjectname);
+    if (projectid && projectname && editmembers) {
+      console.log('iki', sqlProjectname);
+      db.query(sqlProjectname, (err) => {
+        console.log(err);
+        if (err) return res.status(500).json({
+          error: true,
+          message: err
+        })
+        let sqlDeletemember = `DELETE FROM members WHERE projectid = ${projectid}`
+
+        db.query(sqlDeletemember, (err) => {
+          console.log('ini', sqlDeletemember);
+          if (err) return res.status(500).json({
+            error: true,
+            message: err
+          })
+          let result = [];
+
+          if (typeof editmembers == 'string') {
+            result.push(`(${editmembers}, ${projectid})`);
+          } else {
+            for (let i = 0; i < editmembers.length; i++) {
+              result.push(`(${editmembers[i]}, ${projectid})`);
+            }
+          }
+          console.log(result);
+          let sqlUpdate = `INSERT INTO members (userid, projectid) VALUES ${result.join(",")}`
+
+          db.query(sqlUpdate, (err) => {
+            if (err) return res.status(500).json({
+              error: true,
+              message: err
+            })
+            res.redirect('/projects')
+          })
+        })
+      })
+    } else {
+      res.redirect(`/projects`)
+    }
   });
 
-  router.get('/delete/:id', helpers.isLoggedIn, function (req, res, next) {
-    res.redirect('/projects')
+  router.get('/delete/:projectid', helpers.isLoggedIn, function (req, res, next) {
+    console.log('ayo');
+    let projectid = parseInt(req.params.projectid)
+
+    let deletemember = `DELETE FROM members WHERE projectid = ${projectid}`
+    console.log(deletemember);
+    db.query(deletemember, (err) => {
+      console.log('le');
+      console.log(err)
+      if (err) return res.status(500).json({
+        error: true,
+        message: err
+      })
+      console.log('etdah');
+      let deleteProject = `DELETE FROM projects WHERE projectid = ${projectid}`
+      console.log(deleteProject);
+      db.query(deleteProject, err => {
+        if (err) return res.status(500).json({
+          error: true,
+          message: err
+        })
+        res.redirect('/projects')
+      })
+    })
   });
   // end main project
 
