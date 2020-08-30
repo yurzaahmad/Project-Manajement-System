@@ -1,7 +1,7 @@
 <%- include('../partials/headers'); -%>
 
 
-<div class="container container-card">
+<div class="container container-card" style='margin-top: 85px;'>
     <h1>Projects</h1>
     <br>
     <hr>
@@ -10,7 +10,7 @@
     <h2>Filters</h2>
     <br />
     <br />
-    <form action="/" method="GET" id="form-siswa">
+    <form action="" method="GET" id="form-siswa">
         <div class="form-group">
             <input type="checkbox" class="form-check-input" name="checkId" id="checkId" />
             <label for="exampleInputEmail1"> ID</label>
@@ -19,15 +19,15 @@
         </div>
 
         <div class="form-group">
-            <input type="checkbox" class="form-check-input" name="checkString" id="checkString" />
+            <input type="checkbox" class="form-check-input" name="checkName" id="checkName" />
             <label for="exampleInputEmail1">Name</label>
-            <input type="string" class="form-control" name="string" value="" id="String" aria-describedby="emailHelp"
+            <input type="string" class="form-control" name="name" value="" id="name" aria-describedby="emailHelp"
                 placeholder="Name" />
         </div>
         <div class="form-group form-check">
-            <input type="checkbox" class="form-check-input" name="checkBoolean" id="checkBoolean" />
+            <input type="checkbox" class="form-check-input" name="checkMember" id="checkMember" />
             <label class="form-check-label" for="exampleCheck1">Member</label>
-            <select class="custom-select custom-select-lg mb-3" name="">
+            <select class="custom-select custom-select-lg mb-3" name="member" id="member">
                 <option selected>Choose the member</option>
                 <% hasil.forEach((obj) => { %>
                 <option value="<%= obj.userid %>"><%= obj.fullname %></option>
@@ -80,7 +80,7 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th <%= option.id ? `` : `hidden`%>> id </th>
+                <th <%= option.id ? `` : `hidden`%>> ID </th>
                 <th <%= option.name ? `` : `hidden`%>>Name</th>
                 <th <%= option.member ? `` : `hidden`%>>Members</th>
                 <th>Actions</th>
@@ -90,7 +90,11 @@
             <% data.forEach((item, index) =>{ %>
             <tr>
 
-                <td <%= option.id ? `` : `hidden`%>><%= item.projectid %></td>
+                <td <%= option.id ? `` : `hidden`%>>
+                    <a class="btn btn-outline-primary" href="/projects/<%= item.projectid %>/overview">
+                        <%= item.projectid %>
+                    </a>
+                </td>
                 <td <%= option.name ? `` : `hidden`%>><%= item.name %></td>
                 <td <%= option.member ? `` : `hidden`%>><%= item.member %></td>
                 <td>

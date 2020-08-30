@@ -13,3 +13,10 @@ a {
   padding: 15px 15px;
   height: 75px;
 }
+th {
+  background-color: #4caf50;
+  color: white;
+}
+li {
+  border-right: 1px solid #bbb;
+}
