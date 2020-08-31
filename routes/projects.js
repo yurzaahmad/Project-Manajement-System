@@ -301,6 +301,15 @@ module.exports = (db) => {
     res.render('projects/activity/view', { user: req.session.user })
   });
 
+  router.post('/members/:projectid/option', helpers.isLoggedIn, (req, res) => {
+    const projectid = req.params.projectid;
+    optionMember.id = req.body.checkid;
+    optionMember.name = req.body.checkname;
+    optionMember.position = req.body.checkposition;
+    res.redirect(`/projects/members/${projectid}`)
+  })
+
+
 
   // start members
   router.get('/members/:projectid', helpers.isLoggedIn, function (req, res, next) {
@@ -319,15 +328,15 @@ module.exports = (db) => {
       result.push(`CONCAT(users.firstname, ' ' , users.lastname) ILIKE '${req.query.name}'`)
     }
     if (req.query.checkPosition && req.query.position) {
-      result.push(`members.role=${req.query.position}`)
+      result.push(`users.position=${req.query.position}`)
     }
     if (result.length > 0) {
       sqlFilter += ` AND ${result.join(" AND ")}`
     }
     sqlFilter += `) AS member`;
-    console.log('search', sqlFilter);
+    // console.log('search', sqlFilter);
     db.query(sqlFilter, (err, totaldata) => {
-      console.log('ini', totaldata);
+      // console.log('ini', totaldata);
       if (err) return res.json(err)
       //pagination
       const url = req.url == '/' ? '/?page=1' : req.url
@@ -338,7 +347,7 @@ module.exports = (db) => {
       const total = totaldata.rows[0].total
       const pages = Math.ceil(total / limit);
 
-      let sqlFilter = `SELECT users.userid, users.position, projects.name, projects.projectid, members.id, members.role, 
+      let sqlFilter = `SELECT users.userid, projects.name, projects.projectid, members.id, members.role, 
       concat (users.firstname || ' ' || users.lastname, ' ')
           AS fullname from members
           LEFT JOIN projects ON projects.projectid = members.projectid
@@ -352,7 +361,7 @@ module.exports = (db) => {
       sqlFilter += `ORDER BY members.id ASC LIMIT ${limit} OFFSET ${offset};`
 
 
-      console.log(sqlFilter);
+      // console.log(sqlFilter);
       db.query(sqlFilter, (err, dataproject) => {
         // console.log('woi', getData);
         // console.log('data project', dataproject);
@@ -362,7 +371,7 @@ module.exports = (db) => {
         let sqlProject = `SELECT * FROM projects WHERE projectid = ${projectid}`
 
         db.query(sqlProject, (err, dataProject) => {
-          console.log("kaman", dataProject);
+          // console.log("kaman", dataProject);
           if (err) return res.status(500).json({
             error: true,
             message: err
@@ -394,19 +403,84 @@ module.exports = (db) => {
   });
 
   router.get('/members/:projectid/add', helpers.isLoggedIn, function (req, res, next) {
-    res.render('projects/members/add', { user: req.session.user })
+    let sql = `SELECT DISTINCT userid, CONCAT (firstname, ' ' , lastname) AS fullname FROM users ORDER BY fullname`
+    db.query(sql, (err, data) => {
+      // console.log(data.rows);
+      console.log("popo");
+      res.render('projects/members/add', {
+        data: data.rows,
+        user: req.session.user
+      })
+
+    })
   });
 
   router.post('/members/:projectid/add', helpers.isLoggedIn, function (req, res, next) {
-    res.redirect(`/projects/members/${req.params.projectid}`)
+    console.log("ini we");
+    let projectid = req.params.projectid
+    const {
+      inputmember,
+      inputposition
+    } = req.body
+    console.log(req.body);
+    let sql = `INSERT INTO members (userid, role, projectid) VALUES ($1, $2, $3)`
+
+    let insertMembers = [inputmember, inputposition, projectid]
+    db.query(sql, insertMembers, (err) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json(err)
+      }
+
+      res.redirect(`/projects/members/${projectid}`)
+
+    })
+
   });
 
-  router.get('/members/:projectid/edit/:memberid', helpers.isLoggedIn, function (req, res, next) {
-    res.render('projects/members/edit', { user: req.session.user })
+  router.post('/members/:projectid/edit/:id', helpers.isLoggedIn, function (req, res, next) {
+    let projectid = req.params.projectid
+    let id = req.params.id
+    let position = req.body.inputposition
+    let sql = `UPDATE members SET role='${position}' WHERE id = ${id}`
+    db.query(sql, (err) => {
+      if (err) return res.status(500).json({
+        error: true,
+        message: err
+      })
+      res.redirect(`/projects/members/${projectid}`)
+    })
   });
 
-  router.post('/members/:projectid/edit/:memberid', helpers.isLoggedIn, function (req, res, next) {
-    res.redirect(`/projects/members/${req.params.projectid}`)
+  router.get('/members/:projectid/edit/:id', helpers.isLoggedIn, function (req, res, next) {
+    let projectid = req.params.projectid
+    let id = req.params.id
+
+    let sqlMember = `SELECT id, role, CONCAT(firstname,' ',lastname) AS fullname FROM members
+    LEFT JOIN users ON members.userid = users.userid WHERE projectid = ${projectid} AND id = ${id};`
+    db.query(sqlMember, (err, dataMember) => {
+      console.log('yuu');
+      if (err) return res.status(500).json({
+        error: true,
+        message: err
+      })
+      let sqlProject = `SELECT * FROM projects WHERE projectid = ${projectid}`
+      db.query(sqlProject, (err, dataProject) => {
+        console.log('yur', sqlProject);
+        if (err) return res.status(500).json({
+          error: true,
+          message: err
+        })
+        res.render('projects/members/edit', {
+          login: req.session.user,
+          projectid,
+          id,
+          member: dataMember.rows[0],
+          project: dataProject.rows[0]
+        })
+      })
+    })
+    // res.redirect(`/projects/members/${req.params.projectid}`)
   });
 
   router.get('/members/:projectid/delete/:memberid', helpers.isLoggedIn, function (req, res, next) {

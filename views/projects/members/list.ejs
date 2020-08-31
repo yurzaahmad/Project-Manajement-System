@@ -57,9 +57,9 @@
 </div>
 
 <div class="container container-card" style='margin-top: 85px;'>
-    <h1>Projects</h1>
+    <h1>Members</h1>
     <br>
-    <hr>
+    <hr class="new4">
 
     <input type="hidden" id="page" name="page" value="1">
     <h2>Filters</h2>
@@ -99,7 +99,7 @@
 
     <div style="margin:auto">
         <h5>Option Column</h5>
-        <form method="POST" action="/projects/option" style="margin-left: auto;">
+        <form method="POST" action="/projects/members/<%= projectid%>/option" style="margin-left: auto;">
             <div class="row">
                 <div class="col">
                     <div class="form-check">
@@ -121,7 +121,7 @@
                 </div>
                 <div class="col">
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="cmembers" name="checkmember" value="true"
+                        <input class="form-check-input" type="checkbox" id="cmembers" name="checkposition" value="true"
                             <%= option.position ? `checked` : ``%>>
                         <label class="form-check-label" for="cmembers">
                             Position
@@ -148,14 +148,15 @@
             <tr>
 
                 <td <%= option.id ? `` : `hidden`%>>
-                    <a class="btn btn-outline-primary" href="/projects/<%= item.projectid %>/overview">
+                    <a class="btn btn-outline-primary">
                         <%= item.id %>
                     </a>
                 </td>
                 <td <%= option.name ? `` : `hidden`%>><%= item.fullname %></td>
-                <td <%= option.position ? `` : `hidden`%>><%= item.position %></td>
+                <td <%= option.position ? `` : `hidden`%>><%= item.role %></td>
                 <td>
-                    <a href="/projects/edit/<%= item.projectid %>" class="btn btn-success">edit</a>
+                    <a href="/projects/members/<%= item.projectid %>/edit/<%= item.id %>"
+                        class="btn btn-success">edit</a>
                     <a href="/projects/delete/<%= item.projectid %>" class="btn btn-danger">delete</a>
                 </td>
             </tr>
@@ -181,8 +182,8 @@
         </ul>
     </nav>
     <br>
-    <a href="/projects/add" class="btn btn-dark">Add</a>
-
+    <a href="/projects/members/<%= projectid%>/add" class="btn btn-dark">Add</a>
+    <br><br>
 </div>
 
 </body>

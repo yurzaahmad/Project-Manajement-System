@@ -20,3 +20,13 @@ th {
 li {
   border-right: 1px solid #bbb;
 }
+/* Thick red border */
+hr.new4 {
+  border: 1px solid red;
+}
+
+/* Large rounded green border */
+hr.new5 {
+  border: 10px solid green;
+  border-radius: 1px;
+}
