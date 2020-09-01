@@ -14,6 +14,12 @@ let optionMember = {
   name: true,
   position: true
 }
+let optionIssues = {
+  issueid: true,
+  subject: true,
+  tracker: true,
+  description: true
+}
 
 module.exports = (db) => {
   // start main project
@@ -29,7 +35,7 @@ module.exports = (db) => {
       data.push(`projects.projectid=${req.query.id}`)
     }
     if (req.query.checkName && req.query.name) {
-      data.push(`projects.name ILIKE '%${req.query.name}%'`)
+      data.push(`projects.name ILIKE '${req.query.name}'`)
     }
     if (req.query.checkMember && req.query.member) {
       data.push(`members.userid=${req.query.member}`)
@@ -40,7 +46,7 @@ module.exports = (db) => {
     getData += `) AS projectname`;
     console.log('search', getData);
     db.query(getData, (err, totaldata) => {
-
+      // console.log('qo', totaldata.rows);
       if (err) return res.json(err)
       //pagination
       const url = req.url == '/' ? '/?page=1' : req.url
@@ -62,7 +68,7 @@ module.exports = (db) => {
       }
 
       getData += `GROUP BY projects.projectid ORDER BY projectid ASC LIMIT ${limit} OFFSET ${offset};`
-
+      console.log('iyaa', getData);
 
 
       db.query(getData, (err, dataproject) => {
@@ -483,16 +489,61 @@ module.exports = (db) => {
     // res.redirect(`/projects/members/${req.params.projectid}`)
   });
 
-  router.get('/members/:projectid/delete/:memberid', helpers.isLoggedIn, function (req, res, next) {
-    res.redirect(`/projects/members/${req.params.projectid}`)
+  router.get('/members/:projectid/delete/:id', helpers.isLoggedIn, function (req, res, next) {
+    let projectid = req.params.projectid
+    let id = req.params.id
+
+    let deleteMember = `DELETE FROM members WHERE projectid = ${projectid} AND id = ${id};`
+    db.query(deleteMember, (err) => {
+      if (err) return res.status(500).json({
+        error: true,
+        message: err
+      })
+      res.redirect(`/projects/members/${projectid}`)
+    })
   });
 
   // end members
 
   // start issues
   router.get('/issues/:projectid', helpers.isLoggedIn, function (req, res, next) {
-    res.render('projects/issues/list', { user: req.session.user })
+    console.log('masuk');
+    let link = 'projects'
+    let projectid = req.params.projectid
+    let dataissues = `SELECT issueid, subject, tracker, description, projects.projectid, projects.name FROM issues
+    LEFT JOIN projects ON issues.projectid = projects.projectid WHERE projects.projectid = ${projectid}`
+    db.query(dataissues, (err, data) => {
+      console.log('nih', dataissues);
+      console.log('noh', data);
+      if (err) return res.status(500).json({
+        error: true,
+        message: err
+      })
+      let dataproject = data.rows
+      console.log('nyu', dataproject);
+      res.render('projects/issues/list', {
+        dataproject,
+        user: req.session.user,
+        data: data.rows,
+        login: req.session.user,
+        option: optionIssues,
+        link,
+        projectid
+      })
+
+    })
   });
+
+  router.post('/issues/:projectid/option', helpers.isLoggedIn, (req, res) => {
+    const projectid = req.params.projectid;
+    console.log('qee');
+
+    optionIssues.issueid = req.body.checkid;
+    optionIssues.subject = req.body.checkname;
+    optionIssues.tracker = req.body.checktracker;
+    optionIssues.description = req.body.checkdescription;
+    res.redirect(`/projects/issues/${projectid}`)
+  })
 
   router.get('/issues/:projectid/add', helpers.isLoggedIn, function (req, res, next) {
     res.render('projects/issues/add', { user: req.session.user })

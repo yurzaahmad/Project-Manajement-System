@@ -50,10 +50,10 @@
 </head>
 
 <div class="sidenav" style='margin-top: 70px;'>
-    <a href="#">Overview</a>
-    <a href="#">Activity</a>
-    <a href="/projects/members">Members</a>
-    <a href="#">Issues</a>
+    <a class="nav-link <%= url == 'overview' ? 'active' : '' %>" href="#">Overview</a>
+    <a class="nav-link <%= url == 'overview' ? 'active' : '' %>" href="#">Activity</a>
+    <a class="nav-link <%= url == 'overview' ? 'active' : '' %>" href="/projects/members/<%= projectid%>">Members</a>
+    <a class="nav-link <%= url == 'overview' ? 'active' : '' %>" href="/projects/issues/<%= projectid%>">Issues</a>
 </div>
 
 <div class="container container-card" style='margin-top: 85px;'>

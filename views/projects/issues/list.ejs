@@ -1,0 +1,185 @@
+<%- include('../../partials/headers'); -%>
+
+<head>
+    <title>CSS Template</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* Style the side navigation */
+        .sidenav {
+            height: 100%;
+            width: 200px;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+        }
+
+
+        /* Side navigation links */
+        .sidenav a {
+            color: white;
+            padding: 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        /* Change color on hover */
+        .sidenav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        /* Style the content */
+        .content {
+            margin-left: 200px;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+
+<div class="sidenav" style='margin-top: 70px;'>
+    <a class="nav-link" href="#">Overview</a>
+    <a class="nav-link" href="#">Activity</a>
+    <a class="nav-link" href="/projects/members/<%= projectid%>">Members</a>
+    <a class="nav-link" href="/projects/issues/<%= projectid%>">Issues</a>
+</div>
+
+<div class="container container-card" style='margin-top: 85px;'>
+    <h1>Issues</h1>
+    <br>
+    <hr class="new4">
+
+    <input type="hidden" id="page" name="page" value="1">
+    <h2>Filters</h2>
+    <br />
+    <br />
+    <form action="" method="GET" id="form-siswa">
+        <div class="form-group">
+            <input type="checkbox" class="form-check-input" name="checkId" id="checkId" />
+            <label for="exampleInputEmail1"> ID</label>
+            <input type="integer" class="form-control" name="id" value="" id="Id" aria-describedby="emailHelp"
+                placeholder="ID" />
+        </div>
+
+        <div class="form-group">
+            <input type="checkbox" class="form-check-input" name="checkName" id="checkName" />
+            <label for="exampleInputEmail1">Name</label>
+            <input type="string" class="form-control" name="name" value="" id="name" aria-describedby="emailHelp"
+                placeholder="Name" />
+        </div>
+        <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" name="checkTracker" id="checkTracker" />
+            <label class="form-check-label" for="exampleCheck1">Tracker</label>
+            <select class="custom-select custom-select-lg mb-3" name="tracker" id="tracker">
+                <option selected>Choose the tracker</option>
+
+                <option value="">Bug</option>
+                <option value="">Feature</option>
+                <option value="">Support</option>
+
+            </select>
+        </div>
+
+        <button type=" submit" class="btn btn-dark">SEARCH</button>
+
+    </form>
+    <br><br>
+
+    <div style="margin:auto">
+        <h5>Option Column</h5>
+        <form method="POST" action="/projects/issues/<%= projectid%>/option" style="margin-left: auto;">
+            <div class="row">
+                <div class="col">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="cid" name="checkid" value="true"
+                            <%= option.issueid ? `checked` : ``%>>
+                        <label class="form-check-label" for="cid">
+                            ID
+                        </label>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="cname" name="checkname" value="true"
+                            <%= option.subject ? `checked` : ``%>>
+                        <label class="form-check-label" for="cname">
+                            Subject
+                        </label>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="cmembers" name="checktracker" value="true"
+                            <%= option.tracker ? `checked` : ``%>>
+                        <label class="form-check-label" for="cmembers">
+                            Tracker
+                        </label>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="cmembers" name="checkdescription"
+                            value="true" <%= option.description ? `checked` : ``%>>
+                        <label class="form-check-label" for="cmembersz">
+                            Description
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <button type="submit" class="btn btn-dark">apply</button>
+        </form>
+    </div>
+    <br><br>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th <%= option.issueid ? `` : `hidden`%>> ID </th>
+                <th <%= option.subject ? `` : `hidden`%>>Subject</th>
+                <th <%= option.tracker ? `` : `hidden`%>>Tracker</th>
+                <th <%= option.description ? `` : `hidden`%>> Description </th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% data.forEach((item, index) =>{ %>
+            <tr>
+
+                <td <%= option.issueid ? `` : `hidden`%>>
+                    <a class="btn btn-outline-primary">
+                        <%= item.issueid %>
+                    </a>
+                </td>
+                <td <%= option.subject ? `` : `hidden`%>><%= item.subject %></td>
+                <td <%= option.tracker ? `` : `hidden`%>><%= item.tracker %></td>
+                <td <%= option.description ? `` : `hidden`%>><%= item.description %></td>
+                <td>
+                    <a href="/projects/members/<%= item.projectid %>/edit/<%= item.id %>"
+                        class="btn btn-success">edit</a>
+                    <a href="/projects/delete/<%= item.projectid %>" class="btn btn-danger">delete</a>
+                </td>
+            </tr>
+            <% }) %>
+        </tbody>
+    </table>
+    <br>
+    <br>
+    <a href="/projects/members/<%= projectid%>/add" class="btn btn-dark">Add</a>
+    <br><br>
+</div>
+
+</body>
+
+</html>
