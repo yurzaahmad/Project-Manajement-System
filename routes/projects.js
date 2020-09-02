@@ -512,6 +512,7 @@ module.exports = (db) => {
     let projectid = req.params.projectid
     let dataissues = `SELECT issueid, subject, tracker, description, projects.projectid, projects.name FROM issues
     LEFT JOIN projects ON issues.projectid = projects.projectid WHERE projects.projectid = ${projectid}`
+
     db.query(dataissues, (err, data) => {
       console.log('nih', dataissues);
       console.log('noh', data);
@@ -546,11 +547,75 @@ module.exports = (db) => {
   })
 
   router.get('/issues/:projectid/add', helpers.isLoggedIn, function (req, res, next) {
-    res.render('projects/issues/add', { user: req.session.user })
+    let projectid = req.params.projectid
+    let sqlProject = `SELECT * FROM projects WHERE projectid = ${projectid}`
+    // console.log('oyy');
+    db.query(sqlProject, (err, dataproject) => {
+      // console.log('masuk', dataproject);
+      if (err) return res.status(500).json
+      let sqlMember = `SELECT users.userid, CONCAT(users.firstname,' ', users.lastname) AS fullname FROM members
+      LEFT JOIN users ON members.userid = users.userid WHERE projectid = ${projectid}`
+      // console.log(sqlMember);
+      db.query(sqlMember, (err, datamember) => {
+        // console.log('lagi', datamember.rows[0]);
+        // console.log(datamember);
+        if (err) return res.status(500).json
+        res.render('projects/issues/add', {
+          user: req.session.user,
+          projectid,
+          project: dataproject.rows[0],
+          member: datamember.rows
+        })
+      })
+    })
   });
 
   router.post('/issues/:projectid/add', helpers.isLoggedIn, function (req, res, next) {
-    res.redirect(`/projects/issues/${req.params.projectid}`)
+    let projectid = req.params.projectid;
+    console.log('masuk ki');
+    let user = req.session.user;
+
+    //issues by file
+    if (req.files) {
+      let file = req.files.file;
+
+      let fileName = file.name.toLowerCase().replace('', Date.now()).split().join("-")
+
+      let sqlIssues = `INSERT INTO public.issues(
+        projectid, tracker, subject, description, status, priority, assignee, startdate, duedate, estimatedtime, done, files, author, cracteddate)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW());`
+
+      let values = [projectid, req.body.tracker, req.body.subject, req.body.description, req.body.status, req.body.priority, parseInt(req.body.assignee), req.body.startdate, req.body.duedate, parseInt(req.body.estimatedtime), parseInt(req.body.done), fileName, user.userid]
+
+      db.query(sqlIssues, values, (err) => {
+        console.log("qoo", sqlIssues);
+        console.log("qee", values);
+        if (err) return res.status(500).json({
+          error: true,
+          message: error
+        })
+        file.mv(path.join(__dirname, "..", "public", "upload", fileName), function (err) {
+          if (err) return res.status(500).send(err)
+          res.redirect(`/projects/issues/${req.params.projectid}`)
+        })
+      })
+    } else {
+      let sqlIssues = `INSERT INTO public.issues(
+        projectid, tracker, subject, description, status, priority, assignee, startdate, duedate, estimatedtime, done, author, cracteddate)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW());`
+
+      let values = [projectid, req.body.tracker, req.body.subject, req.body.description, req.body.status, req.body.priority, parseInt(req.body.assignee), req.body.startdate, req.body.duedate, parseInt(req.body.estimatedtime), parseInt(req.body.done), user.userid]
+
+      db.query(sqlIssues, values, (err) => {
+        console.log(sqlIssues);
+        console.log(values);
+        if (err) return res.status(500).json({
+          error: true,
+          message: error
+        })
+        res.redirect(`/projects/issues/${req.params.projectid}`)
+      })
+    }
   });
 
   router.get('/issues/:projectid/edit/:issueid', helpers.isLoggedIn, function (req, res, next) {
