@@ -249,7 +249,7 @@
                                         <label for="assignee" class="col-sm-2 col-form-label">
                                             Assignee</label>
                                         <div class="col-sm-10">
-                                            <select class="custom-select custom-select-lg mb-3" name="inputmember"
+                                            <select class="custom-select custom-select-lg mb-3" name="assignee"
                                                 id="member">
                                                 <option selected>Choose the Assignee</option>
                                                 <% member.forEach((obj) => { %>
@@ -320,7 +320,8 @@
                                     <div class="form-group row">
                                         <div class="col-sm-10">
                                             <button type="submit" class="btn btn-success">Add</button>
-                                            <a class="btn btn-info" href="/projects/3/issues" role="button">Back</a>
+                                            <a class="btn btn-info" href="/projects/issues/<%= projectid%>"
+                                                role="button">Back</a>
                                         </div>
                                     </div>
 

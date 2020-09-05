@@ -166,7 +166,7 @@
                 <td <%= option.tracker ? `` : `hidden`%>><%= item.tracker %></td>
                 <td <%= option.description ? `` : `hidden`%>><%= item.description %></td>
                 <td>
-                    <a href="/projects/members/<%= item.projectid %>/edit/<%= item.id %>"
+                    <a href="/projects/issues/<%= item.projectid %>/edit/ <%= item.issueid %>"
                         class="btn btn-success">edit</a>
                     <a href="/projects/delete/<%= item.projectid %>" class="btn btn-danger">delete</a>
                 </td>
