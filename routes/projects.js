@@ -226,6 +226,7 @@ module.exports = (db) => {
       editmembers
     } = req.body
     console.log(req.body);
+
     let sqlProjectname = `UPDATE projects SET name = '${projectname}' WHERE projectid = ${projectid}`
     console.log(sqlProjectname);
     if (projectid && projectname && editmembers) {
@@ -306,7 +307,55 @@ module.exports = (db) => {
   });
 
   router.get('/activity/:projectid', helpers.isLoggedIn, function (req, res, next) {
-    res.render('projects/activity/view', { user: req.session.user })
+    console.log('masuk');
+    const links = 'projects';
+    const url = 'activity';
+    const projectid = req.params.projectid
+
+    let projectData = `SELECT * FROM projects WHERE projectid=${projectid}`
+    db.query(projectData, (err, dataProject) => {
+      // console.log(dataProject);
+      if (err) return res.send(err)
+
+      let project = dataProject.rows[0]
+      let sqlActivity = `SELECT activity.*, CONCAT(users.firstname,' ', users.lastname) AS author,
+      (time AT TIME ZONE 'Asia/Jakarta'):: time AS timeactivity,
+      (time AT TIME ZONE 'Asia/Jakarta'):: date AS dateactivity
+      FROM activity
+      LEFT JOIN users ON activity.author = users.userid WHERE projectid = ${projectid}
+      ORDER BY dateactivity DESC, timeactivity DESC`
+
+      db.query(sqlActivity, (err, dataActivity) => {
+        console.log(sqlActivity);
+        console.log(dataActivity);
+        if (err) return res.status(500).json
+
+        let activity = dataActivity.rows;
+
+        activity.forEach(item => {
+          item.dateactivity = moment(item.dateactivity).format('YYYY-MM-DD');
+          item.timeactivity = moment(item.timeactivity, 'HH:mm:ss.SSS').format('HH.mm.ss');
+
+          if (item.dateactivity == moment().format('YYYY-MM-DD')) {
+            item.dateactivity = 'Today'
+          } else if (item.dateactivity == moment().subtract(1, 'days').format('YYYY-MM-DD')) {
+            item.dateactivity = 'Yesterday'
+          } else {
+            item.dateactivity = moment(item.dateactivity).format("MMMM Do, YYYY")
+          }
+        })
+        res.render('projects/activity/view', {
+          user: req.session.user,
+          links,
+          url,
+          projectid,
+          project,
+          moment,
+          activity
+        })
+
+      })
+    })
   });
 
   router.post('/members/:projectid/option', helpers.isLoggedIn, (req, res) => {
@@ -648,8 +697,8 @@ module.exports = (db) => {
         let sqleditMember = `SELECT users.userid, CONCAT(users.firstname, ' ' , users.lastname) As fullname FROM members 
         LEFT JOIN users ON members.userid = users.userid WHERE projectid= ${projectid}`
         db.query(sqleditMember, (err, dataIssues) => {
-          // console.log('nggak juga', dataIssues);
-          // console.log('iyaa', sqleditMember);
+          console.log('nggak juga', dataIssues);
+          console.log('iyaa', sqleditMember);
           if (err) return res.status(500).json({
             error: true,
             message: err
@@ -663,10 +712,10 @@ module.exports = (db) => {
               message: err
             })
             let edit = dataEdit.rows
-            // console.log('project', project);
-            // console.log('issues', issue);
-            // console.log('member', member);
-            // console.log(edit);
+            console.log('project', project);
+            console.log('issues', issue);
+            console.log('member', member);
+            console.log(edit);
             res.render('projects/issues/edit', {
               moment,
               user: req.session.user,
@@ -687,10 +736,16 @@ module.exports = (db) => {
   });
 
   router.post('/issues/:projectid/edit/:issueid', helpers.isLoggedIn, function (req, res, next) {
+    console.log('masuk');
     let projectid = req.params.projectid
     let issueid = req.params.issueid
-    let usser = req.session.user
+    let user = req.session.user
     let formEdit = req.body
+    let title = `${formEdit.subject} #${issueid} (${formEdit.tracker}) - [${formEdit.status}]`
+    let desc = `Spent Time by Hours : from ${formEdit.oldspent} updated to ${formEdit.spenttime}`
+    let dataActivity = `INSERT INTO activity (time, title, description, author, projectid, olddone, nowdone) VALUES (NOW(), $1, $2, $3, $4, $5, $6)`
+    let value = [title, desc, user.userid, projectid, formEdit.olddone, formEdit.done]
+
 
     if (req.files) {
       let file = req.files.file
@@ -698,45 +753,65 @@ module.exports = (db) => {
       let fileName = file.name.toLowerCase().replace("", Date.now()).split(" ").join("-")
 
       let sqlupdate = `UPDATE issues SET subject = $1, description = $2, status = $3, priority = $4, assignee = $5, duedate = $6, done = $7, parenttask = $8, spenttime = $9, targetversion = $10
-      updateddate = NOW() ${formEdit.status == 'closed' ? `, closeddate = NOW() ` : " "} WHERE issueid = $11`
+       WHERE issueid = $11`
 
       let values = [formEdit.subject, formEdit.description, formEdit.status, formEdit.priority, parseInt(formEdit.assignee), formEdit.dueDate, parseInt(formEdit.done),
-      parseInt(formEdit.parenttask), parseInt(formEdit.spenttime), formEdit.target, issueid
+      parseInt(formEdit.perenttask), parseInt(formEdit.spenttime), formEdit.target, issueid
       ]
 
-      //console.log(values)
-      //console.log(sqlupdate)
+      console.log('nilai', values)
+      console.log('sqlupdatenya', sqlupdate)
 
       db.query(sqlupdate, values, (err) => {
         if (err) return res.status(500).json({
           error: true,
           message: err
         })
+        console.log('here');
         file.mv(path.join(__dirname, "..", "public", "upload", fileName), function (err) {
           if (err) return res.status(500).send(err)
 
+          db.query(dataActivity, value, (err) => {
+            if (err) return res.status(500).json
+          })
           res.redirect(`/projects/issues/${req.params.projectid}`)
         })
       })
     } else {
-      let sqlupdate = `UPDATE issues SET subject = $1, description = $2, status = $3, priority = $4, assignee = $5, duedate = $6, done = $7,
-      parenttask = $8, spenttime =$9, targetversion = $10, updateddate = NOW() ${formEdit.status == 'closed' ? `, closeddate = NOW() ` : " "} WHERE issueid = $11`
+      let sqlupdated = `UPDATE issues SET subject = $1, description = $2, status = $3, priority = $4, assignee = $5, duedate = $6, done = $7,
+      parenttask = $8, spenttime =$9, targetversion = $10 WHERE issueid = $11`
       let values = [formEdit.subject, formEdit.description, formEdit.status, formEdit.priority, parseInt(formEdit.assignee), formEdit.dueDate, parseInt(formEdit.done),
-      parseInt(formEdit.parenttask), parseInt(formEdit.spenttime), formEdit.target, issueid
+      parseInt(formEdit.perenttask), parseInt(formEdit.spenttime), formEdit.target, issueid
       ]
-
-      db.query(sqlupdate, values, (err) => {
+      console.log('nih', sqlupdated);
+      console.log('nilainya', values);
+      db.query(sqlupdated, values, (err) => {
         if (err) return res.status(500).json({
           error: true,
           message: err
         })
+        db.query(dataActivity, value, (err) => {
+          console.log('activity', dataActivity);
+          console.log(value);
+          if (err) return res.status(500).json
+        })
+        console.log('sini');
         res.redirect(`/projects/issues/${req.params.projectid}`)
       })
     }
   });
 
   router.get('/issues/:projectid/delete/:issueid', helpers.isLoggedIn, function (req, res, next) {
-    res.redirect(`/projects/issues/${req.params.projectid}`)
+    let projectid = req.params.projectid
+    let issueid = req.params.issueid
+
+    let sqldelete = `DELETE FROM issues WHERE issueid = ${issueid}`
+
+    db.query(sqldelete, (err) => {
+      console.log(sqldelete);
+      if (err) return res.status(500).json
+      res.redirect(`/projects/issues/${req.params.projectid}`)
+    })
   });
 
   // end issues

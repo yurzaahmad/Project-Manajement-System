@@ -51,7 +51,7 @@
 
 <div class="sidenav" style='margin-top: 70px;'>
     <a class="nav-link" href="#">Overview</a>
-    <a class="nav-link" href="#">Activity</a>
+    <a class="nav-link" href="/projects/activity/<%= projectid%>">Activity</a>
     <a class="nav-link" href="/projects/members/<%= projectid%>">Members</a>
     <a class="nav-link" href="/projects/issues/<%= projectid%>">Issues</a>
 </div>
@@ -166,9 +166,10 @@
                 <td <%= option.tracker ? `` : `hidden`%>><%= item.tracker %></td>
                 <td <%= option.description ? `` : `hidden`%>><%= item.description %></td>
                 <td>
-                    <a href="/projects/issues/<%= item.projectid %>/edit/ <%= item.issueid %>"
+                    <a href="/projects/issues/<%= item.projectid %>/edit/<%= item.issueid %>"
                         class="btn btn-success">edit</a>
-                    <a href="/projects/delete/<%= item.projectid %>" class="btn btn-danger">delete</a>
+                    <a href="/projects/issues/<%= item.projectid %>/delete/<%= item.issueid %>"
+                        class="btn btn-danger">delete</a>
                 </td>
             </tr>
             <% }) %>

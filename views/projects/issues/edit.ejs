@@ -157,7 +157,7 @@
                             <div class="col-sm-10">
                                 <select class="custom-select" name="assignee" required="">
                                     <option disabled>Choose the Assignee ...</option>
-                                    <%member.forEach(item =>{%>
+                                    <% member.forEach(item => {%>
                                     <option value="<%= item.userid%>"
                                         <%= item.userid == issue.assignee ? 'selected' : "" %>>
                                         <%= item.fullname%></option>
