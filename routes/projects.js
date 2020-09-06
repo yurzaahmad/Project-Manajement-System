@@ -300,10 +300,85 @@ module.exports = (db) => {
 
   // start overview
 
-  router.get('/:projectid/overview', helpers.isLoggedIn, function (req, res, next) {
-    console.log('we');
+  router.get('/overview/:projectid', helpers.isLoggedIn, function (req, res, next) {
+    console.log('masuk');
     let projectid = req.params.projectid
-    res.render('projects/overview/view', { user: req.session.user, projectid })
+    let sql = `SELECT * FROM projects WHERE projectid = ${projectid}`
+
+    db.query(sql, (err, data) => {
+      // console.log(sql);
+      // console.log(data);
+      if (err) return res.status(500).json
+      let nameProject = data.rows[0]
+
+      let sqlMembers = `SELECT users.firstname, users.lastname, members.role FROM members
+      LEFT JOIN users ON members.userid = users.userid WHERE members.projectid = ${projectid}`
+
+      db.query(sqlMembers, (err, member) => {
+        console.log(member);
+        console.log(sqlMembers);
+        if (err) return res.status(500).json({
+          error: true,
+          message: err
+        })
+        let members = member.rows;
+
+        let sqlIssues = `SELECT tracker, status FROM issues WHERE projectid = ${projectid}`
+
+        db.query(sqlIssues, (err, dataIssue) => {
+          if (err) return res.status(500).json({
+            error: true,
+            message: err
+          })
+
+          let bugOpen = 0;
+          let bugTotal = 0;
+          let featureOpen = 0;
+          let featureTotal = 0;
+          let supportOpen = 0;
+          let supportTotal = 0;
+
+          dataIssue.rows.forEach(item => {
+            if (item.tracker == 'Bug' && item.status !== "closed") {
+              bugOpen += 1
+            }
+            if (item.tracker == 'Bug') {
+              bugTotal += 1
+            }
+          })
+          dataIssue.rows.forEach(item => {
+            if (item.tracker == 'Feature' && item.status !== "closed") {
+              featureOpen += 1
+            }
+            if (item.tracker == 'Feature') {
+              featureTotal += 1
+            }
+          })
+          dataIssue.rows.forEach(item => {
+            if (item.tracker == 'Support' && item.status !== "closed") {
+              supportOpen += 1
+            }
+            if (item.tracker == 'Support') {
+              supportTotal += 1
+            }
+          })
+          console.log('masuk2');
+          res.render('projects/overview/view', {
+            user: req.session.user, projectid,
+            projectid,
+            nameProject,
+            members,
+            bugOpen,
+            bugTotal,
+            featureOpen,
+            featureTotal,
+            supportOpen,
+            supportTotal
+          })
+
+        })
+      })
+    })
   });
 
   router.get('/activity/:projectid', helpers.isLoggedIn, function (req, res, next) {
