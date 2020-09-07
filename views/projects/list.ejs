@@ -99,7 +99,8 @@
                 <td <%= option.member ? `` : `hidden`%>><%= item.member %></td>
                 <td>
                     <a href="/projects/edit/<%= item.projectid %>" class="btn btn-success">edit</a>
-                    <a href="/projects/delete/<%= item.projectid %>" class="btn btn-danger">delete</a>
+                    <a href="/projects/delete/<%= item.projectid %>" class="btn btn-danger"
+                        <%= login.role == 'user' ? 'hidden' : '' %>>delete</a>
                 </td>
             </tr>
             <% }) %>

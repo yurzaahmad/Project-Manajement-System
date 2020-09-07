@@ -7,7 +7,7 @@ var bcrypt = require('bcrypt')
 module.exports = (db) => {
 
   router.get('/', function (req, res, next) {
-    res.render('login', {loginInfo: req.flash('loginInfo')})
+    res.render('login', { loginInfo: req.flash('loginInfo') })
   });
 
   router.post('/login', function (req, res, next) {
@@ -19,7 +19,7 @@ module.exports = (db) => {
         req.flash('loginInfo', 'something wrong, please call administrator')
         return res.redirect('/')
       }
-
+      console.log(data);
       if (data.rows.length == 0) {
         console.log(err);
         req.flash('loginInfo', 'email or password wrong')

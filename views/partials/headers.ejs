@@ -34,6 +34,9 @@
                 <li class="nav-item">
                     <a class="nav-link text-light" href="/profile">Profile</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-light" href="/users" <%= login.role == 'user' ? 'hidden' : '' %>>Users</a>
+                </li>
             </ul>
 
             <button type="button" class="btn btn-outline-danger"><a class="nav-link text-light" href="/logout">Sign Out

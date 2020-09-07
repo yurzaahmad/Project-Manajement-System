@@ -116,12 +116,14 @@ module.exports = (db) => {
   })
 
   router.get('/add', helpers.isLoggedIn, function (req, res, next) {
+    let user = req.session.user
     let sql = `SELECT DISTINCT userid, CONCAT (firstname, ' ' , lastname) AS fullname FROM users ORDER BY fullname`
     db.query(sql, (err, data) => {
       console.log(data.rows);
       res.render('projects/add', {
         data: data.rows,
-        user: req.session.user
+        user: req.session.user,
+        login: user
       })
 
     })
@@ -184,6 +186,7 @@ module.exports = (db) => {
   });
 
   router.get('/edit/:projectid', helpers.isLoggedIn, (req, res) => {
+    let user = req.session.user
     // console.log('wed');
     let projectid = req.params.projectid
     let links = 'projects'
@@ -212,7 +215,8 @@ module.exports = (db) => {
             nameProject,
             members,
             links,
-            user: req.session.user
+            user: req.session.user,
+            login: user
           })
         })
       })
@@ -301,7 +305,8 @@ module.exports = (db) => {
   // start overview
 
   router.get('/overview/:projectid', helpers.isLoggedIn, function (req, res, next) {
-    console.log('masuk');
+    // console.log('masuk');
+    let user = req.session.user
     let projectid = req.params.projectid
     let sql = `SELECT * FROM projects WHERE projectid = ${projectid}`
 
@@ -373,7 +378,8 @@ module.exports = (db) => {
             featureOpen,
             featureTotal,
             supportOpen,
-            supportTotal
+            supportTotal,
+            login: user
           })
 
         })
@@ -382,7 +388,8 @@ module.exports = (db) => {
   });
 
   router.get('/activity/:projectid', helpers.isLoggedIn, function (req, res, next) {
-    console.log('masuk');
+    // console.log('masuk');
+    let user = req.session.user
     const links = 'projects';
     const url = 'activity';
     const projectid = req.params.projectid
@@ -426,7 +433,8 @@ module.exports = (db) => {
           projectid,
           project,
           moment,
-          activity
+          activity,
+          login: user
         })
 
       })
@@ -535,13 +543,15 @@ module.exports = (db) => {
   });
 
   router.get('/members/:projectid/add', helpers.isLoggedIn, function (req, res, next) {
+    let user = req.session.user
     let sql = `SELECT DISTINCT userid, CONCAT (firstname, ' ' , lastname) AS fullname FROM users ORDER BY fullname`
     db.query(sql, (err, data) => {
       // console.log(data.rows);
       console.log("popo");
       res.render('projects/members/add', {
         data: data.rows,
-        user: req.session.user
+        user: req.session.user,
+        login: user
       })
 
     })
@@ -587,6 +597,7 @@ module.exports = (db) => {
   router.get('/members/:projectid/edit/:id', helpers.isLoggedIn, function (req, res, next) {
     let projectid = req.params.projectid
     let id = req.params.id
+    let user = req.session.user
 
     let sqlMember = `SELECT id, role, CONCAT(firstname,' ',lastname) AS fullname FROM members
     LEFT JOIN users ON members.userid = users.userid WHERE projectid = ${projectid} AND id = ${id};`
@@ -635,6 +646,7 @@ module.exports = (db) => {
   router.get('/issues/:projectid', helpers.isLoggedIn, function (req, res, next) {
     // console.log('masuk');
     let link = 'projects'
+    let user = req.session.user
     let projectid = req.params.projectid
     let dataissues = `SELECT issueid, subject, tracker, description, projects.projectid, projects.name FROM issues
     LEFT JOIN projects ON issues.projectid = projects.projectid WHERE projects.projectid = ${projectid}`
@@ -652,7 +664,7 @@ module.exports = (db) => {
         dataproject,
         user: req.session.user,
         data: data.rows,
-        login: req.session.user,
+        login: user,
         option: optionIssues,
         link,
         projectid
@@ -674,6 +686,7 @@ module.exports = (db) => {
 
   router.get('/issues/:projectid/add', helpers.isLoggedIn, function (req, res, next) {
     let projectid = req.params.projectid
+    let user = req.session.user
     let sqlProject = `SELECT * FROM projects WHERE projectid = ${projectid}`
     // console.log('oyy');
     db.query(sqlProject, (err, dataproject) => {
@@ -690,7 +703,8 @@ module.exports = (db) => {
           user: req.session.user,
           projectid,
           project: dataproject.rows[0],
-          member: datamember.rows
+          member: datamember.rows,
+          login: user
         })
       })
     })
@@ -749,6 +763,7 @@ module.exports = (db) => {
     let issueid = req.params.issueid
     const link = 'project'
     const url = 'issues'
+    let user = req.session.user
 
     let sqlProject = `SELECT * FROM projects WHERE projectid = ${projectid}`
     db.query(sqlProject, (err, dataproject) => {
@@ -801,7 +816,8 @@ module.exports = (db) => {
               member,
               edit,
               link,
-              url
+              url,
+              login: user
             })
           })
         })

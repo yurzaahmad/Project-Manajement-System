@@ -15,7 +15,8 @@ module.exports = (db) => {
       console.log(sql);
       if (err) return res.status(500).json(err)
       res.render('profile/view', {
-        user: req.session.user
+        user: req.session.user,
+        login: user
       })
 
     })
