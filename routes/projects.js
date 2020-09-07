@@ -48,13 +48,13 @@ module.exports = (db) => {
     getData += `) AS projectname`;
     // console.log('search', getData);
     db.query(getData, (err, totaldata) => {
-      // console.log('qo', totaldata.rows);
+      // console.log( totaldata.rows);
       if (err) return res.json(err)
       //pagination
       const url = req.url == '/' ? '/?page=1' : req.url
       const page = req.query.page || 1
       const limit = 3
-      // console.log('ini', page);
+      // console.log(page);
       const offset = (page - 1) * limit
       const total = totaldata.rows[0].total
       const pages = Math.ceil(total / limit);
@@ -70,11 +70,11 @@ module.exports = (db) => {
       }
 
       getData += `GROUP BY projects.projectid ORDER BY projectid ASC LIMIT ${limit} OFFSET ${offset};`
-      // console.log('iyaa', getData);
+      // console.log(getData);
 
 
       db.query(getData, (err, dataproject) => {
-        // console.log('woi', getData);
+        // console.log(getData);
         // console.log('data project', dataproject);
         if (err) return res.json(err)
         db.query(getData, (err, data) => {
@@ -147,7 +147,6 @@ module.exports = (db) => {
 
         db.query(selectMaxId, (err, data) => {
           if (err) {
-            console.log('dede');
             return res.status(500).json(err)
           }
           let idMax = data.rows[0].max;
@@ -162,7 +161,7 @@ module.exports = (db) => {
             }).join()
 
             insertMembers += `${member}`
-            console.log('ini 2 member', member);
+            console.log(member);
           }
           db.query(insertMembers, (err) => {
 
@@ -196,20 +195,17 @@ module.exports = (db) => {
       let nameProject = data.rows[0]
       let sqlMember = `SELECT DISTINCT (userid), concat(firstname, ' ', lastname) AS fullname from users`
       db.query(sqlMember, (err, member) => {
-        // console.log('wes');
         if (err) return res.status(500).json
         let members = member.rows;
         // console.log(members);
         let sqlMember = `SELECT members.userid, projects.name, projects.projectid FROM members LEFT JOIN projects ON members.projectid = projects.projectid WHERE projects.projectid = ${projectid};`
         db.query(sqlMember, (err, dataMembers) => {
           // console.log('ini', dataMembers);
-          // console.log('wer');
           if (err) return res.status(500).json({
             error: true,
             message: err
           })
           let dataMember = dataMembers.rows.map(item => item.userid)
-          // console.log('sek');
           res.render('projects/edit', {
             dataMember,
             nameProject,
@@ -276,19 +272,16 @@ module.exports = (db) => {
   });
 
   router.get('/delete/:projectid', helpers.isLoggedIn, function (req, res, next) {
-    console.log('ayo');
     let projectid = parseInt(req.params.projectid)
 
     let deletemember = `DELETE FROM members WHERE projectid = ${projectid}`
     console.log(deletemember);
     db.query(deletemember, (err) => {
-      console.log('le');
       console.log(err)
       if (err) return res.status(500).json({
         error: true,
         message: err
       })
-      console.log('etdah');
       let deleteProject = `DELETE FROM projects WHERE projectid = ${projectid}`
       console.log(deleteProject);
       db.query(deleteProject, err => {
@@ -503,15 +496,14 @@ module.exports = (db) => {
 
       // console.log(sqlFilter);
       db.query(sqlFilter, (err, dataproject) => {
-        // console.log('woi', getData);
+        // console.log(getData);
         // console.log('data project', dataproject);
-        // console.log('wee');
         if (err) return res.json(err)
 
         let sqlProject = `SELECT * FROM projects WHERE projectid = ${projectid}`
 
         db.query(sqlProject, (err, dataProject) => {
-          // console.log("kaman", dataProject);
+          // console.log( dataProject);
           if (err) return res.status(500).json({
             error: true,
             message: err
@@ -558,7 +550,6 @@ module.exports = (db) => {
   });
 
   router.post('/members/:projectid/add', helpers.isLoggedIn, function (req, res, next) {
-    console.log("ini we");
     let projectid = req.params.projectid
     const {
       inputmember,
@@ -602,14 +593,12 @@ module.exports = (db) => {
     let sqlMember = `SELECT id, role, CONCAT(firstname,' ',lastname) AS fullname FROM members
     LEFT JOIN users ON members.userid = users.userid WHERE projectid = ${projectid} AND id = ${id};`
     db.query(sqlMember, (err, dataMember) => {
-      console.log('yuu');
       if (err) return res.status(500).json({
         error: true,
         message: err
       })
       let sqlProject = `SELECT * FROM projects WHERE projectid = ${projectid}`
       db.query(sqlProject, (err, dataProject) => {
-        console.log('yur', sqlProject);
         if (err) return res.status(500).json({
           error: true,
           message: err
@@ -652,14 +641,14 @@ module.exports = (db) => {
     LEFT JOIN projects ON issues.projectid = projects.projectid WHERE projects.projectid = ${projectid}`
 
     db.query(dataissues, (err, data) => {
-      // console.log('nih', dataissues);
-      // console.log('noh', data);
+      // console.log(dataissues);
+      // console.log(data);
       if (err) return res.status(500).json({
         error: true,
         message: err
       })
       let dataproject = data.rows
-      // console.log('nyu', dataproject);
+      // console.log(dataproject);
       res.render('projects/issues/list', {
         dataproject,
         user: req.session.user,
@@ -675,7 +664,6 @@ module.exports = (db) => {
 
   router.post('/issues/:projectid/option', helpers.isLoggedIn, (req, res) => {
     const projectid = req.params.projectid;
-    console.log('qee');
 
     optionIssues.issueid = req.body.checkid;
     optionIssues.subject = req.body.checkname;
@@ -688,7 +676,6 @@ module.exports = (db) => {
     let projectid = req.params.projectid
     let user = req.session.user
     let sqlProject = `SELECT * FROM projects WHERE projectid = ${projectid}`
-    // console.log('oyy');
     db.query(sqlProject, (err, dataproject) => {
       // console.log('masuk', dataproject);
       if (err) return res.status(500).json
@@ -712,7 +699,6 @@ module.exports = (db) => {
 
   router.post('/issues/:projectid/add', helpers.isLoggedIn, function (req, res, next) {
     let projectid = req.params.projectid;
-    console.log('masuk ki');
     let user = req.session.user;
 
     //issues by file
@@ -728,8 +714,8 @@ module.exports = (db) => {
       let values = [projectid, req.body.tracker, req.body.subject, req.body.description, req.body.status, req.body.priority, parseInt(req.body.assignee), req.body.startDate, req.body.dueDate, parseInt(req.body.estimatedTime), parseInt(req.body.done), fileName, user.userid]
 
       db.query(sqlIssues, values, (err) => {
-        console.log("qoo", sqlIssues);
-        console.log("qee", values);
+        console.log(sqlIssues);
+        console.log(values);
         if (err) return res.status(500).json({
           error: true,
           message: error
@@ -767,8 +753,8 @@ module.exports = (db) => {
 
     let sqlProject = `SELECT * FROM projects WHERE projectid = ${projectid}`
     db.query(sqlProject, (err, dataproject) => {
-      // console.log('yakk', dataproject);
-      // console.log('kii', sqlProject);
+      // console.log(dataproject);
+      // console.log(sqlProject);
       if (err) return res.status(500).json({
         error: true,
         message: err
@@ -787,8 +773,8 @@ module.exports = (db) => {
         let sqleditMember = `SELECT users.userid, CONCAT(users.firstname, ' ' , users.lastname) As fullname FROM members 
         LEFT JOIN users ON members.userid = users.userid WHERE projectid= ${projectid}`
         db.query(sqleditMember, (err, dataIssues) => {
-          console.log('nggak juga', dataIssues);
-          console.log('iyaa', sqleditMember);
+          console.log(dataIssues);
+          console.log(sqleditMember);
           if (err) return res.status(500).json({
             error: true,
             message: err
@@ -886,7 +872,6 @@ module.exports = (db) => {
           console.log(value);
           if (err) return res.status(500).json
         })
-        console.log('sini');
         res.redirect(`/projects/issues/${req.params.projectid}`)
       })
     }
